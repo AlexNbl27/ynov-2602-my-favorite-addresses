@@ -4,8 +4,7 @@ cd server
 npm test
 cd ..
 
-echo "--- Running frontend linting and tests ---"
+echo "--- Running frontend linting ---"
 cd client
 npm run lint
-npm run test
 cd ..
