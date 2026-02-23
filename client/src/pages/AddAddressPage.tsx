@@ -19,8 +19,8 @@ export default function AddAddressPage() {
       await addAddress({ searchWord, name, description });
       toast.success("Adresse ajoutée avec succès !");
       navigate("/");
-    } catch (err: any) {
-      toast.error(err.message || "Impossible d'ajouter l'adresse");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Impossible d'ajouter l'adresse");
     } finally {
       setLoading(false);
     }

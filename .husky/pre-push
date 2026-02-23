@@ -1,0 +1,10 @@
+#!/usr/bin/env sh
+echo "--- Running backend tests ---"
+cd server
+npm test
+cd ..
+
+echo "--- Running frontend linting ---"
+cd client
+npm run lint
+cd ..
