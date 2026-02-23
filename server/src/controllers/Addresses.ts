@@ -76,4 +76,50 @@ addressesRouter.post("/searches", isAuthorized, async (req, res) => {
   return res.json({ items: closeAddresses });
 });
 
+addressesRouter.put("/:id", isAuthorized, async (req, res) => {
+  const user = await getUserFromRequest(req);
+  const id = parseInt(req.params.id as string);
+
+  if (isNaN(id)) {
+    return res.status(400).json({ message: `invalid id` });
+  }
+
+  const address = await Address.findOne({
+    where: { id, user: { id: user.id } },
+  });
+
+  if (!address) {
+    return res.status(404).json({ message: `address not found` });
+  }
+
+  const name = req.body.name;
+  const description = req.body.description;
+
+  if (name !== undefined) address.name = name;
+  if (description !== undefined) address.description = description;
+
+  await address.save();
+  return res.json({ item: address });
+});
+
+addressesRouter.delete("/:id", isAuthorized, async (req, res) => {
+  const user = await getUserFromRequest(req);
+  const id = parseInt(req.params.id as string);
+
+  if (isNaN(id)) {
+    return res.status(400).json({ message: `invalid id` });
+  }
+
+  const address = await Address.findOne({
+    where: { id, user: { id: user.id } },
+  });
+
+  if (!address) {
+    return res.status(404).json({ message: `address not found` });
+  }
+
+  await address.remove();
+  return res.status(204).send();
+});
+
 export default addressesRouter;
