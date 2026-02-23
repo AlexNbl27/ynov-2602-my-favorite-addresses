@@ -1,0 +1,10 @@
+{
+    "version": "1",
+    "name": "Ynov Favorite Addresses API",
+    "type": "collection",
+    "ignore": [
+        "node_modules",
+        ".git"
+    ],
+    "activeEnvironment": "Local"
+}
