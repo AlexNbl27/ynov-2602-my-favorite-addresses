@@ -39,8 +39,8 @@ export default function SearchPage() {
       });
       setResults(items);
       if (items.length === 0) toast.info("Aucune adresse trouvée dans ce rayon");
-    } catch (err: any) {
-      toast.error(err.message || "Erreur lors de la recherche");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Erreur lors de la recherche");
     } finally {
       setLoading(false);
     }

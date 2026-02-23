@@ -38,7 +38,7 @@ export default function Dashboard() {
     try {
       const { items } = await getAddresses();
       setAddresses(items);
-    } catch (err: any) {
+    } catch (err: unknown) {
       toast.error("Impossible de charger les adresses");
     } finally {
       setLoading(false);

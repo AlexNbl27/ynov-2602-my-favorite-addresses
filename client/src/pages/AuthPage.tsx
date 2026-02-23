@@ -21,8 +21,8 @@ export default function AuthPage() {
         await register(email, password);
         toast.success("Compte créé avec succès !");
       }
-    } catch (err: any) {
-      toast.error(err.message || "Une erreur est survenue");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Une erreur est survenue");
     } finally {
       setLoading(false);
     }
@@ -51,8 +51,8 @@ export default function AuthPage() {
             <button
               onClick={() => setIsLogin(true)}
               className={`flex-1 rounded-xl py-2.5 text-sm font-medium transition-all ${isLogin
-                  ? "bg-card text-foreground m3-elevation-1"
-                  : "text-muted-foreground hover:text-foreground"
+                ? "bg-card text-foreground m3-elevation-1"
+                : "text-muted-foreground hover:text-foreground"
                 }`}
             >
               Connexion
@@ -60,8 +60,8 @@ export default function AuthPage() {
             <button
               onClick={() => setIsLogin(false)}
               className={`flex-1 rounded-xl py-2.5 text-sm font-medium transition-all ${!isLogin
-                  ? "bg-card text-foreground m3-elevation-1"
-                  : "text-muted-foreground hover:text-foreground"
+                ? "bg-card text-foreground m3-elevation-1"
+                : "text-muted-foreground hover:text-foreground"
                 }`}
             >
               Inscription

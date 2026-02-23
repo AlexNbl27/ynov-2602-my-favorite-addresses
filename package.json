@@ -1,0 +1,25 @@
+{
+  "name": "ynov-2602-my-favorite-addresses",
+  "version": "1.0.0",
+  "description": "This is a demo app to work arround tests and CI, you should clone this repo, remove the `.git` folder and push it to your own public repo!",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepare": "husky"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AlexNbl27/ynov-2602-my-favorite-addresses.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/AlexNbl27/ynov-2602-my-favorite-addresses/issues"
+  },
+  "homepage": "https://github.com/AlexNbl27/ynov-2602-my-favorite-addresses#readme",
+  "devDependencies": {
+    "husky": "^9.1.7"
+  }
+}
