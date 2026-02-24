@@ -8,7 +8,7 @@ export default defineConfig({
     workers: process.env.CI ? 1 : undefined,
     reporter: 'html',
     use: {
-        baseURL: 'http://localhost:5173',
+        baseURL: 'http://localhost:8080',
         trace: 'on-first-retry',
     },
     projects: [
@@ -17,19 +17,19 @@ export default defineConfig({
             use: { ...devices['Desktop Chrome'] },
         },
     ],
-    webServer: process.env.CI ? [
+    webServer: [
         {
             command: 'npm run dev',
-            url: 'http://localhost:3000',
+            url: 'http://localhost:3000/api/addresses',
             cwd: '../server',
             reuseExistingServer: !process.env.CI,
             timeout: 120000,
         },
         {
-            command: 'npm run dev -- --port 5173',
-            url: 'http://localhost:5173',
+            command: 'npm run dev',
+            url: 'http://localhost:8080',
             reuseExistingServer: !process.env.CI,
             timeout: 120000,
         }
-    ] : undefined,
+    ],
 });

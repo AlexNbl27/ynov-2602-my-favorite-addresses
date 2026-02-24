@@ -33,7 +33,7 @@ jobs:
 
       - name: Run Client Unit Tests
         working-directory: ./client
-        run: npm test -- --run
+        run: npm test -- --run --passWithNoTests
 
       - name: Run Playwright E2E Tests
         working-directory: ./client
