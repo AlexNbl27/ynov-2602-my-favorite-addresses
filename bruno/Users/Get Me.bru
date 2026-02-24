@@ -26,3 +26,12 @@ script:post-response {
     console.log("Logged-in user email:", res.body.item.email);
   }
 }
+
+tests {
+  test("should return the profile of the logged-in user when a valid Bearer token is provided", function() {
+    const data = res.getBody();
+    expect(res.getStatus()).to.equal(200);
+    expect(data).to.have.property("item");
+    expect(data.item.email).to.equal(bru.getEnvVar("userEmail"));
+  });
+}
