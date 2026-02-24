@@ -11,5 +11,27 @@ get {
 }
 
 headers {
-  cookie: token={{token}}
+  Authorization: Bearer {{token}}
+}
+
+script:pre-request {
+  // Guard: abort with a clear message if the token is missing
+  if (!bru.getEnvVar("token")) {
+    throw new Error("No token found in environment. Run 'Get Token' first.");
+  }
+}
+
+script:post-response {
+  if (res.status === 200 && res.body.item) {
+    console.log("Logged-in user email:", res.body.item.email);
+  }
+}
+
+tests {
+  test("should return the profile of the logged-in user when a valid Bearer token is provided", function() {
+    const data = res.getBody();
+    expect(res.getStatus()).to.equal(200);
+    expect(data).to.have.property("item");
+    expect(data.item.email).to.equal(bru.getEnvVar("userEmail"));
+  });
 }

@@ -1,0 +1,34 @@
+name: Unit Tests CI
+
+on:
+  pull_request:
+    branches: ["main", "master", "develop"]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Install Server Dependencies
+        working-directory: ./server
+        run: npm ci || npm install
+
+      - name: Run Server Unit Tests
+        working-directory: ./server
+        run: npm test
+
+      - name: Install Client Dependencies
+        working-directory: ./client
+        run: npm ci || npm install
+
+      - name: Run Client Unit Tests
+        working-directory: ./client
+        run: npm test -- --run --passWithNoTests

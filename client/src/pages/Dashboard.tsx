@@ -106,7 +106,7 @@ export default function Dashboard() {
         {/* Actions */}
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-xl font-bold text-foreground">Mes Adresses</h2>
+            <h2 data-testid="dashboard-title" className="text-xl font-bold text-foreground">Mes Adresses</h2>
             <p className="text-sm text-muted-foreground">
               {addresses.length} adresse{addresses.length !== 1 ? "s" : ""} sauvegardée{addresses.length !== 1 ? "s" : ""}
             </p>
