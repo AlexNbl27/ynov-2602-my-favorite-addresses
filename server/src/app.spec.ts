@@ -4,6 +4,10 @@ import { DataSource } from "typeorm";
 import app from "./app";
 import { User } from "./entities/User";
 import { Address } from "./entities/Address";
+import { getCoordinatesFromSearch } from "./utils/getCoordinatesFromSearch";
+import argon2 from "argon2";
+
+jest.mock("./utils/getCoordinatesFromSearch");
 
 // ---------------------------------------------------------------------------
 // In-memory SQLite database – fully isolated from the dev database
@@ -100,6 +104,30 @@ describe("Users API – integration tests", () => {
             expect(response.status).toBe(400);
             expect(response.body).toHaveProperty("message");
         });
+
+        it("should return 400 when email already exists", async () => {
+            const response = await request(app)
+                .post("/api/users")
+                .send({ email: credentials.email, password: "somepassword" });
+
+            expect(response.status).toBe(400);
+            expect(response.body.message).toBe("Email already exists");
+        });
+
+        it("should return 500 when user creation fails randomly", async () => {
+            // Mock argon2.hash to throw an error
+            const originalHash = argon2.hash;
+            (argon2 as any).hash = jest.fn().mockRejectedValue(new Error("Hash error"));
+
+            const response = await request(app)
+                .post("/api/users")
+                .send({ email: "error_trigger@test.com", password: "password123" });
+
+            expect(response.status).toBe(500);
+
+            // Restore the original function
+            (argon2 as any).hash = originalHash;
+        });
     });
 
     // 2. Login – obtain JWT token --------------------------------------------
@@ -134,6 +162,33 @@ describe("Users API – integration tests", () => {
             expect(response.status).toBe(400);
             expect(response.body).toHaveProperty("message");
         });
+
+        it("should return 400 when email is missing", async () => {
+            const response = await request(app)
+                .post("/api/users/tokens")
+                .send({ password: credentials.password });
+            expect(response.status).toBe(400);
+        });
+
+        it("should return 400 when password is missing", async () => {
+            const response = await request(app)
+                .post("/api/users/tokens")
+                .send({ email: credentials.email });
+            expect(response.status).toBe(400);
+        });
+
+        it("should return 400 when verify throws an error", async () => {
+            const originalVerify = argon2.verify;
+            (argon2 as any).verify = jest.fn().mockRejectedValue(new Error("Verify error"));
+
+            const response = await request(app)
+                .post("/api/users/tokens")
+                .send({ email: credentials.email, password: credentials.password });
+
+            expect(response.status).toBe(400);
+
+            (argon2 as any).verify = originalVerify;
+        });
     });
 
     // 3. Get current user profile --------------------------------------------
@@ -161,5 +216,117 @@ describe("Users API – integration tests", () => {
 
             expect(response.status).toBe(403);
         });
+    });
+});
+
+describe("Addresses API – integration tests", () => {
+    let addressId: number;
+
+    it("should return 400 when creating address with missing fields", async () => {
+        const res = await request(app)
+            .post("/api/addresses")
+            .set("Authorization", `Bearer ${authToken}`)
+            .send({ searchWord: "Paris" });
+        expect(res.status).toBe(400);
+    });
+
+    it("should return 404 when search word is not found", async () => {
+        (getCoordinatesFromSearch as jest.Mock).mockResolvedValue(null);
+        const res = await request(app)
+            .post("/api/addresses")
+            .set("Authorization", `Bearer ${authToken}`)
+            .send({ name: "Home", searchWord: "UnknownPlace" });
+        expect(res.status).toBe(404);
+    });
+
+    it("should create an address when coordinates are found", async () => {
+        (getCoordinatesFromSearch as jest.Mock).mockResolvedValue({ lat: 48.8566, lng: 2.3522 });
+        const res = await request(app)
+            .post("/api/addresses")
+            .set("Authorization", `Bearer ${authToken}`)
+            .send({ name: "Home", searchWord: "Paris", description: "City of Light" });
+        expect(res.status).toBe(200);
+        expect(res.body.item).toBeDefined();
+        addressId = res.body.item.id;
+    });
+
+    it("should get all user addresses", async () => {
+        const res = await request(app)
+            .get("/api/addresses")
+            .set("Authorization", `Bearer ${authToken}`);
+        expect(res.status).toBe(200);
+        expect(res.body.items.length).toBeGreaterThan(0);
+    });
+
+    it("should search close addresses (success)", async () => {
+        const res = await request(app)
+            .post("/api/addresses/searches")
+            .set("Authorization", `Bearer ${authToken}`)
+            .send({ radius: 10, from: { lat: 48.8, lng: 2.3 } });
+        expect(res.status).toBe(200);
+        expect(Array.isArray(res.body.items)).toBeTruthy();
+    });
+
+    it("should return 400 on searches if radius is missing or invalid", async () => {
+        const res = await request(app)
+            .post("/api/addresses/searches")
+            .set("Authorization", `Bearer ${authToken}`)
+            .send({ from: { lat: 48.8, lng: 2.3 } });
+        expect(res.status).toBe(400);
+    });
+
+    it("should return 400 on searches if from is missing or invalid", async () => {
+        const res = await request(app)
+            .post("/api/addresses/searches")
+            .set("Authorization", `Bearer ${authToken}`)
+            .send({ radius: 10, from: { lat: 48.8 } });
+        expect(res.status).toBe(400);
+    });
+
+    it("should update an existing address", async () => {
+        const res = await request(app)
+            .put(`/api/addresses/${addressId}`)
+            .set("Authorization", `Bearer ${authToken}`)
+            .send({ name: "New Home Name", description: "Updated desc" });
+        expect(res.status).toBe(200);
+        expect(res.body.item.name).toBe("New Home Name");
+        expect(res.body.item.description).toBe("Updated desc");
+    });
+
+    it("should return 400 when updating with invalid id", async () => {
+        const res = await request(app)
+            .put(`/api/addresses/abc`)
+            .set("Authorization", `Bearer ${authToken}`)
+            .send({ name: "test" });
+        expect(res.status).toBe(400);
+    });
+
+    it("should return 404 when updating a non-existent address", async () => {
+        const res = await request(app)
+            .put(`/api/addresses/9999`)
+            .set("Authorization", `Bearer ${authToken}`)
+            .send({ name: "test" });
+        expect(res.status).toBe(404);
+    });
+
+    it("should return 400 when deleting with invalid id", async () => {
+        const res = await request(app)
+            .delete(`/api/addresses/abc`)
+            .set("Authorization", `Bearer ${authToken}`);
+        expect(res.status).toBe(400);
+    });
+
+    it("should return 404 when deleting a non-existent address", async () => {
+        const res = await request(app)
+            .delete(`/api/addresses/9999`)
+            .set("Authorization", `Bearer ${authToken}`);
+        expect(res.status).toBe(404);
+    });
+
+    it("should delete an existing address", async () => {
+        const res = await request(app)
+            .delete(`/api/addresses/${addressId}`)
+            .set("Authorization", `Bearer ${authToken}`);
+        expect(res.status).toBe(204);
     });
 });
