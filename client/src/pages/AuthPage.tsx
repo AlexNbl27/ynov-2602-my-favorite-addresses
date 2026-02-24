@@ -49,6 +49,7 @@ export default function AuthPage() {
           {/* Toggle */}
           <div className="mb-6 flex rounded-2xl bg-secondary p-1">
             <button
+              data-testid="tab-login"
               onClick={() => setIsLogin(true)}
               className={`flex-1 rounded-xl py-2.5 text-sm font-medium transition-all ${isLogin
                 ? "bg-card text-foreground m3-elevation-1"
@@ -58,6 +59,7 @@ export default function AuthPage() {
               Connexion
             </button>
             <button
+              data-testid="tab-register"
               onClick={() => setIsLogin(false)}
               className={`flex-1 rounded-xl py-2.5 text-sm font-medium transition-all ${!isLogin
                 ? "bg-card text-foreground m3-elevation-1"
@@ -76,6 +78,7 @@ export default function AuthPage() {
               <div className="relative">
                 <Mail className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <input
+                  data-testid="input-email"
                   type="email"
                   required
                   value={email}
@@ -93,6 +96,7 @@ export default function AuthPage() {
               <div className="relative">
                 <Lock className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <input
+                  data-testid="input-password"
                   type="password"
                   required
                   value={password}
@@ -104,6 +108,7 @@ export default function AuthPage() {
             </div>
 
             <button
+              data-testid="button-submit"
               type="submit"
               disabled={loading}
               className="flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-primary text-sm font-semibold text-primary-foreground transition-all hover:opacity-90 disabled:opacity-50 m3-elevation-1"
