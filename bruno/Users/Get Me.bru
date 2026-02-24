@@ -11,5 +11,18 @@ get {
 }
 
 headers {
-  cookie: token={{token}}
+  Authorization: Bearer {{token}}
+}
+
+script:pre-request {
+  // Guard: abort with a clear message if the token is missing
+  if (!bru.getEnvVar("token")) {
+    throw new Error("No token found in environment. Run 'Get Token' first.");
+  }
+}
+
+script:post-response {
+  if (res.status === 200 && res.body.item) {
+    console.log("Logged-in user email:", res.body.item.email);
+  }
 }

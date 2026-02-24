@@ -12,7 +12,22 @@ post {
 
 body:json {
   {
-    "email": "test@example.com",
-    "password": "password123"
+    "email": "{{userEmail}}",
+    "password": "{{userPassword}}"
+  }
+}
+
+script:pre-request {
+  if (!bru.getEnvVar("userEmail")) {
+    bru.setEnvVar("userEmail", "test@example.com");
+  }
+  if (!bru.getEnvVar("userPassword")) {
+    bru.setEnvVar("userPassword", "password123");
+  }
+}
+
+script:post-response {
+  if (res.status === 200 && res.body.item) {
+    bru.setEnvVar("userId", res.body.item.id);
   }
 }
