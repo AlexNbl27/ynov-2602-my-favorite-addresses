@@ -26,7 +26,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-    await datasource.destroy();
+    await testDataSource.destroy();
 });
 
 it("should create a user account with specific email and password", async () => {
@@ -57,7 +57,6 @@ it("should create a user account with random email and password using faker", as
     expect(response.body.item).toBeDefined();
     expect(response.body.item.email).toBe(randomEmail);
 });
-    });
 
 // 2. Login et récupération du profil (Test de flux)
 describe("Auth Flow", () => {
@@ -102,5 +101,4 @@ describe("Error Handling", () => {
 
         expect(response.status).toBe(400);
     });
-});
 });
