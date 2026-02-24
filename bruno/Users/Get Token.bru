@@ -23,3 +23,12 @@ script:post-response {
     bru.setEnvVar("token", res.body.token);
   }
 }
+
+tests {
+  test("should return a JWT token when credentials are correct", function() {
+    const data = res.getBody();
+    expect(res.getStatus()).to.equal(200);
+    expect(data).to.have.property("token");
+    expect(data.token).to.be.a("string");
+  });
+}

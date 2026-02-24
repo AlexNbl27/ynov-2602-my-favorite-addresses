@@ -1,0 +1,25 @@
+meta {
+  name: Create User - Missing Email
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/users
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "password": "{{userPassword}}"
+  }
+}
+
+tests {
+  test("should return 400 when email is missing", function() {
+    const data = res.getBody();
+    expect(res.getStatus()).to.equal(400);
+    expect(data).to.have.property("message");
+  });
+}
