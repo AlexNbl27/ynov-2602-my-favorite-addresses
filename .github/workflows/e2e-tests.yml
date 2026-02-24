@@ -1,11 +1,11 @@
-name: Playwright and Unit Tests CI
+name: Playwright E2E Tests CI
 
 on:
   pull_request:
     branches: ["main", "master"]
 
 jobs:
-  test:
+  e2e-test:
     runs-on: ubuntu-latest
 
     steps:
@@ -21,19 +21,11 @@ jobs:
         working-directory: ./server
         run: npm ci || npm install
 
-      - name: Run Server Unit Tests
-        working-directory: ./server
-        run: npm test
-
       - name: Install Client Dependencies
         working-directory: ./client
         run: |
           npm ci || npm install
           npx playwright install --with-deps
-
-      - name: Run Client Unit Tests
-        working-directory: ./client
-        run: npm test -- --run --passWithNoTests
 
       - name: Run Playwright E2E Tests
         working-directory: ./client
