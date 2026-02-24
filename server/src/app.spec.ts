@@ -1,24 +1,32 @@
 import request from "supertest";
-import { DataSource } from "typeorm";
 import { faker } from "@faker-js/faker";
+import { DataSource } from "typeorm";
 import app from "./app";
 import { User } from "./entities/User";
 import { Address } from "./entities/Address";
 
 // ---------------------------------------------------------------------------
-// Configuration de la base de données de test (In-memory SQLite)
+// In-memory SQLite database – fully isolated from the dev database
 // ---------------------------------------------------------------------------
 const testDataSource = new DataSource({
     type: "better-sqlite3",
     database: ":memory:",
+    // Both entities are required: User has a OneToMany relation to Address
     entities: [User, Address],
     synchronize: true,
     logging: false,
 });
 
-// Variable pour stocker le token de l'utilisateur créé dynamiquement
+// Shared state across the test suite (populated progressively)
+const credentials = {
+    email: `test-${Date.now()}@example.com`,
+    password: "password123",
+};
 let authToken: string;
 
+// ---------------------------------------------------------------------------
+// Lifecycle hooks
+// ---------------------------------------------------------------------------
 beforeAll(async () => {
     await testDataSource.initialize();
     User.useDataSource(testDataSource);
@@ -58,47 +66,100 @@ it("should create a user account with random email and password using faker", as
     expect(response.body.item.email).toBe(randomEmail);
 });
 
-// 2. Login et récupération du profil (Test de flux)
-describe("Auth Flow", () => {
-    const userEmail = faker.internet.email();
-    const userPassword = faker.internet.password();
+// ---------------------------------------------------------------------------
+// Test suite
+// ---------------------------------------------------------------------------
+describe("Users API – integration tests", () => {
+    // 1. Create user ---------------------------------------------------------
+    describe("POST /api/users", () => {
+        it("should create a new user and return 200 with the user object", async () => {
+            const response = await request(app)
+                .post("/api/users")
+                .send({ email: credentials.email, password: credentials.password });
 
-    it("should register, login and get profile", async () => {
-        // Étape A : Création
-        await request(app)
-            .post("/api/users")
-            .send({ email: userEmail, password: userPassword });
+            expect(response.status).toBe(200);
+            expect(response.body).toHaveProperty("item");
+            expect(response.body.item).toHaveProperty("id");
+            expect(response.body.item.email).toBe(credentials.email);
+        });
 
-        // Étape B : Login pour obtenir le token
-        const loginRes = await request(app)
-            .post("/api/users/tokens")
-            .send({ email: userEmail, password: userPassword });
+        it("should return 400 when email is missing", async () => {
+            const response = await request(app)
+                .post("/api/users")
+                .send({ password: credentials.password });
 
-        authToken = loginRes.body.token;
-        expect(authToken).toBeDefined();
+            expect(response.status).toBe(400);
+            expect(response.body).toHaveProperty("message");
+        });
 
-        // Étape C : Accès au profil avec le Bearer token
-        const profileRes = await request(app)
-            .get("/api/users/me")
-            .set("Authorization", `Bearer ${authToken}`);
+        it("should return 400 when password is missing", async () => {
+            const response = await request(app)
+                .post("/api/users")
+                .send({ email: credentials.email });
 
-        expect(profileRes.status).toBe(200);
-        expect(profileRes.body.item.email).toBe(userEmail);
+            expect(response.status).toBe(400);
+            expect(response.body).toHaveProperty("message");
+        });
     });
-});
 
-// 3. Tests d'erreurs
-describe("Error Handling", () => {
-    it("should return 400 when creating a user with an existing email", async () => {
-        const duplicateEmail = faker.internet.email();
-        const password = faker.internet.password();
+    // 2. Login – obtain JWT token --------------------------------------------
+    describe("POST /api/users/tokens", () => {
+        it("should return a JWT token when credentials are correct", async () => {
+            const response = await request(app)
+                .post("/api/users/tokens")
+                .send({ email: credentials.email, password: credentials.password });
 
-        // Premier enregistrement
-        await request(app).post("/api/users").send({ email: duplicateEmail, password });
+            expect(response.status).toBe(200);
+            expect(response.body).toHaveProperty("token");
+            expect(typeof response.body.token).toBe("string");
 
-        // Deuxième enregistrement (doublon)
-        const response = await request(app).post("/api/users").send({ email: duplicateEmail, password });
+            // Save the token so the next describe block can use it
+            authToken = response.body.token;
+        });
 
-        expect(response.status).toBe(400);
+        it("should return 400 with the wrong password", async () => {
+            const response = await request(app)
+                .post("/api/users/tokens")
+                .send({ email: credentials.email, password: "wrongpassword" });
+
+            expect(response.status).toBe(400);
+            expect(response.body).toHaveProperty("message");
+        });
+
+        it("should return 400 with an unknown email", async () => {
+            const response = await request(app)
+                .post("/api/users/tokens")
+                .send({ email: "nobody@example.com", password: credentials.password });
+
+            expect(response.status).toBe(400);
+            expect(response.body).toHaveProperty("message");
+        });
+    });
+
+    // 3. Get current user profile --------------------------------------------
+    describe("GET /api/users/me", () => {
+        it("should return the profile of the logged-in user when a valid Bearer token is provided", async () => {
+            const response = await request(app)
+                .get("/api/users/me")
+                .set("Authorization", `Bearer ${authToken}`);
+
+            expect(response.status).toBe(200);
+            expect(response.body).toHaveProperty("item");
+            expect(response.body.item.email).toBe(credentials.email);
+        });
+
+        it("should return 403 when no token is provided", async () => {
+            const response = await request(app).get("/api/users/me");
+
+            expect(response.status).toBe(403);
+        });
+
+        it("should return 403 when the token is invalid", async () => {
+            const response = await request(app)
+                .get("/api/users/me")
+                .set("Authorization", "Bearer invalid.token.here");
+
+            expect(response.status).toBe(403);
+        });
     });
 });
