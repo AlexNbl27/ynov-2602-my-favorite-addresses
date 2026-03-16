@@ -1,0 +1,25 @@
+meta {
+  name: Add Favorite - No Token
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/addresses/:addressId/favorite
+  body: none
+  auth: none
+}
+
+params:path {
+  addressId: 1
+}
+
+assert {
+  res.status: eq 403
+}
+
+tests {
+  test("should return 403 when no authentication token provided", function() {
+    expect(res.status).to.equal(403);
+  });
+}

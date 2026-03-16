@@ -1,0 +1,31 @@
+meta {
+  name: Add Favorite - Not Found
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/addresses/:addressId/favorite
+  body: none
+  auth: none
+}
+
+params:path {
+  addressId: 99999
+}
+
+headers {
+  cookie: token={{token}}
+}
+
+assert {
+  res.status: eq 404
+  res.body.message: eq "Address not found"
+}
+
+tests {
+  test("should return 404 when address does not exist", function() {
+    expect(res.status).to.equal(404);
+    expect(res.body.message).to.equal("Address not found");
+  });
+}
