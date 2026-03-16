@@ -35,13 +35,3 @@ Les tests couvrent souvent :
 Cela force a penser a tous les cas possibles, pas seulement aux cas "heureux".
 
 **Conclusion** : Codewars utilise les tests comme outil d'apprentissage et de validation. C'est une excellente facon de pratiquer la lecture de tests et la resolution de problemes guides par les tests.
-
-## Exercice 5 Bonus : Tests supplementaires
-
-Tests ajoutes pour augmenter la couverture :
-
-- `tests/validation.test.ts` : Tests unitaires email/password (22 tests)
-- `tests/getCoordinatesFromSearch.test.ts` : Tests API geocoding (6 tests)
-- `client/e2e/validation.spec.ts` : Tests E2E validation formulaire
-
-**Total : 82 tests serveur (avant: 51)**
