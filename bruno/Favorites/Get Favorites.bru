@@ -1,0 +1,33 @@
+meta {
+  name: Get Favorites
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/addresses/favorites
+  body: none
+  auth: none
+}
+
+headers {
+  cookie: token={{token}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.items: isArray true
+}
+
+tests {
+  test("should return array of favorite addresses", function() {
+    expect(res.status).to.equal(200);
+    expect(res.body.items).to.be.an('array');
+  });
+
+  test("all returned addresses should be marked as favorite", function() {
+    res.body.items.forEach(function(item) {
+      expect(item.isFavorite).to.equal(true);
+    });
+  });
+}

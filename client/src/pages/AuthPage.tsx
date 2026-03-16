@@ -10,8 +10,24 @@ export default function AuthPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const validateForm = (): string | null => {
+    if (!isLogin) {
+      if (password.length < 8) {
+        return "Le mot de passe doit contenir au moins 8 caractères";
+      }
+    }
+    return null;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const validationError = validateForm();
+    if (validationError) {
+      toast.error(validationError);
+      return;
+    }
+
     setLoading(true);
     try {
       if (isLogin) {

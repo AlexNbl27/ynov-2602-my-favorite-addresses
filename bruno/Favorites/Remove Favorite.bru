@@ -1,0 +1,32 @@
+meta {
+  name: Remove Favorite
+  type: http
+  seq: 2
+}
+
+delete {
+  url: {{baseUrl}}/addresses/:addressId/favorite
+  body: none
+  auth: none
+}
+
+params:path {
+  addressId: 1
+}
+
+headers {
+  cookie: token={{token}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.item.isFavorite: eq false
+}
+
+tests {
+  test("should remove address from favorites", function() {
+    expect(res.status).to.equal(200);
+    expect(res.body.item).to.have.property('isFavorite');
+    expect(res.body.item.isFavorite).to.equal(false);
+  });
+}
