@@ -1,0 +1,26 @@
+meta {
+  name: Get Token - Unknown Email
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{baseUrl}}/users/tokens
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "email": "nobody@example.com",
+    "password": "{{userPassword}}"
+  }
+}
+
+tests {
+  test("should return 400 with an unknown email", function() {
+    const data = res.getBody();
+    expect(res.getStatus()).to.equal(400);
+    expect(data).to.have.property("message");
+  });
+}

@@ -1,0 +1,32 @@
+name: Playwright E2E Tests CI
+
+on:
+  pull_request:
+    branches: ["main", "master"]
+
+jobs:
+  e2e-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Install Server Dependencies
+        working-directory: ./server
+        run: npm ci || npm install
+
+      - name: Install Client Dependencies
+        working-directory: ./client
+        run: |
+          npm ci || npm install
+          npx playwright install --with-deps
+
+      - name: Run Playwright E2E Tests
+        working-directory: ./client
+        run: npx playwright test

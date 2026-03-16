@@ -12,13 +12,23 @@ post {
 
 body:json {
   {
-    "email": "test@example.com",
-    "password": "password123"
+    "email": "{{userEmail}}",
+    "password": "{{userPassword}}"
   }
 }
 
 script:post-response {
+  // Save the JWT token to the environment so subsequent requests can use it
   if (res.status === 200 && res.body.token) {
     bru.setEnvVar("token", res.body.token);
   }
+}
+
+tests {
+  test("should return a JWT token when credentials are correct", function() {
+    const data = res.getBody();
+    expect(res.getStatus()).to.equal(200);
+    expect(data).to.have.property("token");
+    expect(data.token).to.be.a("string");
+  });
 }

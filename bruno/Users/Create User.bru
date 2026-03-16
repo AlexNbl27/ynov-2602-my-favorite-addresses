@@ -12,7 +12,32 @@ post {
 
 body:json {
   {
-    "email": "test@example.com",
-    "password": "password123"
+    "email": "{{userEmail}}",
+    "password": "{{userPassword}}"
   }
+}
+
+script:pre-request {
+  if (!bru.getEnvVar("userEmail")) {
+    bru.setEnvVar("userEmail", "test@example.com");
+  }
+  if (!bru.getEnvVar("userPassword")) {
+    bru.setEnvVar("userPassword", "password123");
+  }
+}
+
+script:post-response {
+  if (res.status === 200 && res.body.item) {
+    bru.setEnvVar("userId", res.body.item.id);
+  }
+}
+
+tests {
+  test("should create a new user and return 200 with the user object", function() {
+    const data = res.getBody();
+    expect(res.getStatus()).to.equal(200);
+    expect(data).to.have.property("item");
+    expect(data.item).to.have.property("id");
+    expect(data.item.email).to.equal(bru.getEnvVar("userEmail"));
+  });
 }

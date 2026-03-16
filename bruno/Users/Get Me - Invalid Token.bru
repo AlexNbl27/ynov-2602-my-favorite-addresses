@@ -1,0 +1,21 @@
+meta {
+  name: Get Me - Invalid Token
+  type: http
+  seq: 9
+}
+
+get {
+  url: {{baseUrl}}/users/me
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer invalid.token.here
+}
+
+tests {
+  test("should return 403 when the token is invalid", function() {
+    expect(res.getStatus()).to.equal(403);
+  });
+}
