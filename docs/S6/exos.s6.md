@@ -1,24 +1,5 @@
 # Exercices S6 - TDD
 
-## Exercice 1 : Validation du mot de passe (TDD)
-
-Nouvelle fonctionnalite developpee en approche TDD :
-- Mot de passe minimum 8 caracteres
-- Tests ecrits AVANT le code (RED -> GREEN)
-
-## Exercice 2 : Correction bug email (TDD)
-
-Bug corrige : emails invalides acceptes
-- Validation format email avec regex
-- Tests ecrits AVANT la correction
-
-## Exercice 3 : Tests Bruno pour fonctionnalite future
-
-Fonctionnalite "Favoris" - tests sans implementation :
-- POST /api/addresses/:id/favorite
-- DELETE /api/addresses/:id/favorite
-- GET /api/addresses/favorites
-
 ## Exercice 4 : Codewars et les tests
 
 ### Katas proposes
