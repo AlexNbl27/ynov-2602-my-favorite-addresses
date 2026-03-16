@@ -7,6 +7,18 @@ import { getUserFromRequest } from "../utils/getUserFromRequest";
 
 const tokenSecretKey = process.env.SESSION_SECRET || "superlongstring";
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+const isValidEmail = (email: string): boolean => {
+  return EMAIL_REGEX.test(email);
+};
+
+const MIN_PASSWORD_LENGTH = 8;
+
+const isValidPassword = (password: string): boolean => {
+  return password.length >= MIN_PASSWORD_LENGTH;
+};
+
 const usersRouter = Router();
 
 usersRouter.post("/", async (req, res) => {
@@ -15,6 +27,14 @@ usersRouter.post("/", async (req, res) => {
 
   if (!email || !password) {
     return res.status(400).json({ message: `email and password are required` });
+  }
+
+  if (!isValidEmail(email)) {
+    return res.status(400).json({ message: "Invalid email format" });
+  }
+
+  if (!isValidPassword(password)) {
+    return res.status(400).json({ message: "Password must be at least 8 characters long" });
   }
 
   const existingUser = await User.findOneBy({ email });

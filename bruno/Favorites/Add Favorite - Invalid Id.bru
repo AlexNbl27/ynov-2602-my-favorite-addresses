@@ -1,0 +1,31 @@
+meta {
+  name: Add Favorite - Invalid Id
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/addresses/:addressId/favorite
+  body: none
+  auth: none
+}
+
+params:path {
+  addressId: abc
+}
+
+headers {
+  cookie: token={{token}}
+}
+
+assert {
+  res.status: eq 400
+  res.body.message: eq "Invalid address id"
+}
+
+tests {
+  test("should return 400 when address id is not a number", function() {
+    expect(res.status).to.equal(400);
+    expect(res.body.message).to.equal("Invalid address id");
+  });
+}
