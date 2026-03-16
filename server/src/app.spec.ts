@@ -114,6 +114,81 @@ describe("Users API – integration tests", () => {
             expect(response.body.message).toBe("Email already exists");
         });
 
+        // TDD: Email validation tests
+        it("should return 400 when email format is invalid (missing @)", async () => {
+            const response = await request(app)
+                .post("/api/users")
+                .send({ email: "invalidemail.com", password: "password123" });
+
+            expect(response.status).toBe(400);
+            expect(response.body.message).toBe("Invalid email format");
+        });
+
+        it("should return 400 when email format is invalid (missing domain)", async () => {
+            const response = await request(app)
+                .post("/api/users")
+                .send({ email: "test@", password: "password123" });
+
+            expect(response.status).toBe(400);
+            expect(response.body.message).toBe("Invalid email format");
+        });
+
+        it("should return 400 when email format is invalid (missing local part)", async () => {
+            const response = await request(app)
+                .post("/api/users")
+                .send({ email: "@domain.com", password: "password123" });
+
+            expect(response.status).toBe(400);
+            expect(response.body.message).toBe("Invalid email format");
+        });
+
+        it("should return 400 when email contains spaces", async () => {
+            const response = await request(app)
+                .post("/api/users")
+                .send({ email: "test @domain.com", password: "password123" });
+
+            expect(response.status).toBe(400);
+            expect(response.body.message).toBe("Invalid email format");
+        });
+
+        it("should accept valid email formats", async () => {
+            const validEmail = `valid-${Date.now()}@example.com`;
+            const response = await request(app)
+                .post("/api/users")
+                .send({ email: validEmail, password: "password123" });
+
+            expect(response.status).toBe(200);
+            expect(response.body.item.email).toBe(validEmail);
+        });
+
+        // TDD: Password validation tests
+        it("should return 400 when password is too short (less than 8 characters)", async () => {
+            const response = await request(app)
+                .post("/api/users")
+                .send({ email: `short-pwd-${Date.now()}@example.com`, password: "1234567" });
+
+            expect(response.status).toBe(400);
+            expect(response.body.message).toBe("Password must be at least 8 characters long");
+        });
+
+        it("should accept password with exactly 8 characters", async () => {
+            const response = await request(app)
+                .post("/api/users")
+                .send({ email: `exact8-${Date.now()}@example.com`, password: "12345678" });
+
+            expect(response.status).toBe(200);
+            expect(response.body.item).toBeDefined();
+        });
+
+        it("should accept password with more than 8 characters", async () => {
+            const response = await request(app)
+                .post("/api/users")
+                .send({ email: `long-pwd-${Date.now()}@example.com`, password: "securePassword123!" });
+
+            expect(response.status).toBe(200);
+            expect(response.body.item).toBeDefined();
+        });
+
         it("should return 500 when user creation fails randomly", async () => {
             // Mock argon2.hash to throw an error
             const originalHash = argon2.hash;
